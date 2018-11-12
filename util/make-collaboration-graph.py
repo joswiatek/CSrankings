@@ -4,6 +4,7 @@ from collections import *
 
 import csv
 import json
+import copy
 from nameparser import HumanName
 
 #import networkx as nx
@@ -90,9 +91,8 @@ def addNode(name, nodes, addedNode, authorIndex, authorInd):
                            'group' : areaNum[maxareas[name]]})
             addedNode[name.decode('utf8')] = True
             authorIndex[canonicalName(name)] = authorInd
-            authorInd += 1
-        
     
+
 def makegraph(institution,fname,dir):
     sumdegree = 0
     sumnodes = 0
@@ -115,9 +115,12 @@ def makegraph(institution,fname,dir):
         if facultydict[author] != institution:
             continue
         if author in aliases:
+            print("before alias:", author)
             author = aliases[author]
-        realname = canonicalName(author)
+            print("after alias:", author)
         addNode(author, nodes, addedNode, authorIndex, authorInd)
+        authorInd += 1
+        realname = canonicalName(author)
         sumnodes += 1
         # Check co-authors.
         # Now go through all the coauthors (we may not find any, which we handle as a special case below).
@@ -139,12 +142,13 @@ def makegraph(institution,fname,dir):
                     # dot.node(coauth.decode('utf8'),color=authorColor[coauth],style="filled")
                     # Force co-author to be added here so we can reference him/her.
                     addNode(coauth, nodes, addedNode, authorIndex, authorInd)
+                    authorInd += 1
                     if not edges.has_key(realname+coauthorrealname):
                         degree += 1
                         sumdegree += 1
                         if degree > maxdegree:
                             maxdegree = degree
-                        # print realname + " - " + coauthorrealname
+                        #print realname + " - " + coauthorrealname
                         links.append({ 'source' : authorIndex[realname],
                                        'target' : authorIndex[coauthorrealname],
                                        'value'  : 1 })
@@ -162,6 +166,7 @@ def makegraph(institution,fname,dir):
             # dot.node(author.decode('utf8'),color=authorColor[author],style="filled")
             # graph.add_edge(author.decode('utf8'),author.decode('utf8'))
             edges[realname+realname] = 2 # include one bogus co-authored article (2 b/c divided by 2 later)
+
             links.append({ 'source' : authorIndex[realname],
                            'target' : authorIndex[realname],
                            'value'  : 1 })

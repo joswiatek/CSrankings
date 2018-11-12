@@ -92,3 +92,8 @@ collab-graph: generated-author-info.csv faculty-coauthors.csv
 	@echo "Building collaboration graph data."
 	python util/make-collaboration-graph.py
 
+full-collab-graph: generated-author-info.csv faculty-coauthors.csv
+	@echo "Generating the list of all publications (all-author-info.csv)."
+	python util/generate-all-pubs.py
+	@echo "Building collaboration graph data."
+	python util/make-full-collaboration-graph.py
